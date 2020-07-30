@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.alibaba.nacos.common.http.client;
+package com.alibaba.nacos.common.http.client.response;
 
 import com.alibaba.nacos.common.http.param.Header;
 import com.alibaba.nacos.common.utils.IoUtils;
@@ -22,8 +22,6 @@ import com.alibaba.nacos.common.utils.IoUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.util.List;
-import java.util.Map;
 
 /**
  * JDk http client response implement.
@@ -47,10 +45,7 @@ public class JdkHttpClientResponse implements HttpClientResponse {
         if (this.responseHeader == null) {
             this.responseHeader = Header.newInstance();
         }
-        
-        for (Map.Entry<String, List<String>> entry : conn.getHeaderFields().entrySet()) {
-            this.responseHeader.addParam(entry.getKey(), entry.getValue().get(0));
-        }
+        this.responseHeader.setOriginalResponseHeader(conn.getHeaderFields());
         return this.responseHeader;
     }
     
