@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-package com.alibaba.nacos.api.naming.utils;
+package com.alibaba.nacos.client.utils;
 
-import com.alibaba.nacos.api.utils.StringUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class NamingUtilsTest {
+/**
+ * ContextPathUtil test.
+ *
+ * @author Wei.Wang
+ * @date 2020/11/26 3:13 PM
+ */
+public class ContextPathUtilTest {
     
     @Test
-    public void testGetGroupedNameOptional() {
-        String onlyGroupName = NamingUtils.getGroupedNameOptional(StringUtils.EMPTY, "groupA");
-        assertEquals(onlyGroupName, "groupA@@");
-        
-        String onlyServiceName = NamingUtils.getGroupedNameOptional("serviceA", StringUtils.EMPTY);
-        assertEquals(onlyServiceName, "@@serviceA");
-        
-        String groupNameAndServiceName = NamingUtils.getGroupedNameOptional("serviceA", "groupA");
-        assertEquals(groupNameAndServiceName, "groupA@@serviceA");
+    public void testNormalizeContextPath() {
+        assertEquals("/nacos", ContextPathUtil.normalizeContextPath("/nacos"));
+        assertEquals("/nacos", ContextPathUtil.normalizeContextPath("nacos"));
+        assertEquals("", ContextPathUtil.normalizeContextPath("/"));
+        assertEquals("", ContextPathUtil.normalizeContextPath(""));
     }
 }
