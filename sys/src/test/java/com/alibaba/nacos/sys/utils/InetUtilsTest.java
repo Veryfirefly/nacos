@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-package com.alibaba.nacos.naming.cluster.remote.request;
+package com.alibaba.nacos.sys.utils;
 
-import com.alibaba.nacos.api.remote.request.Request;
+import com.alibaba.nacos.sys.env.EnvUtil;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.core.env.StandardEnvironment;
 
-/**
- * Cluster request.
- *
- * @author xiweng.yy
- */
-public abstract class AbstractClusterRequest extends Request {
+public class InetUtilsTest {
     
-    private static final String CLUSTER = "cluster";
+    @Test
+    public void testIsDomain() {
+        Assert.assertTrue(InetUtils.isDomain("localhost"));
+    }
     
-    @Override
-    public String getModule() {
-        return CLUSTER;
+    @Before
+    public void setUp() {
+        EnvUtil.setEnvironment(new StandardEnvironment());
     }
 }
