@@ -38,6 +38,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Listener Management.
@@ -59,6 +60,50 @@ public class CacheData {
             new SynchronousQueue<>(), internalNotifierFactory);
     
     private static final Logger LOGGER = LogUtils.logger(CacheData.class);
+    
+    private final String name;
+    
+    private final ConfigFilterChainManager configFilterChainManager;
+    
+    public final String dataId;
+    
+    public final String group;
+    
+    public final String tenant;
+    
+    private final CopyOnWriteArrayList<ManagerListenerWrap> listeners;
+    
+    private volatile String md5;
+    
+    /**
+     * whether use local config.
+     */
+    private volatile boolean isUseLocalConfig = false;
+    
+    /**
+     * last modify time.
+     */
+    private volatile long localConfigLastModified;
+    
+    private volatile String content;
+    
+    private volatile String encryptedDataKey;
+    
+    /**
+     * local cache change timestamp,for concurrent control.
+     */
+    private volatile AtomicLong lastModifiedTs = new AtomicLong(0);
+    
+    private int taskId;
+    
+    private volatile boolean isInitializing = true;
+    
+    /**
+     * if is cache data md5 sync with the server.
+     */
+    private volatile boolean isSyncWithServer = false;
+    
+    private String type;
     
     public boolean isInitializing() {
         return isInitializing;
@@ -90,7 +135,7 @@ public class CacheData {
      *
      * @return property value of lastModifiedTs
      */
-    public long getLastModifiedTs() {
+    public AtomicLong getLastModifiedTs() {
         return lastModifiedTs;
     }
     
@@ -100,7 +145,7 @@ public class CacheData {
      * @param lastModifiedTs value to be assigned to property lastModifiedTs
      */
     public void setLastModifiedTs(long lastModifiedTs) {
-        this.lastModifiedTs = lastModifiedTs;
+        this.lastModifiedTs.set(lastModifiedTs);
     }
     
     public String getType() {
@@ -147,7 +192,7 @@ public class CacheData {
     }
     
     /**
-     * 返回监听器列表上的迭代器，只读。保证不返回NULL.
+     * Returns the iterator on the listener list, read-only. It is guaranteed not to return NULL.
      */
     public List<Listener> getListeners() {
         List<Listener> result = new ArrayList<Listener>();
@@ -251,7 +296,9 @@ public class CacheData {
                         adapter.fillContext(dataId, group);
                         LOGGER.info("[{}] [notify-context] dataId={}, group={}, md5={}", name, dataId, group, md5);
                     }
-                    // 执行回调之前先将线程classloader设置为具体webapp的classloader，以免回调方法中调用spi接口是出现异常或错用（多应用部署才会有该问题）。
+                    // Before executing the callback, set the thread classloader to the classloader of
+                    // the specific webapp to avoid exceptions or misuses when calling the spi interface in
+                    // the callback method (this problem occurs only in multi-application deployment).
                     Thread.currentThread().setContextClassLoader(appClassLoader);
                     
                     ConfigResponse cr = new ConfigResponse();
@@ -330,7 +377,7 @@ public class CacheData {
      * 1.first add listener.default is false;need to check. 2.receive config change notify,set false;need to check.
      * 3.last listener is remove,set to false;need to check
      *
-     * @return
+     * @return the flag if sync with server
      */
     public boolean isSyncWithServer() {
         return isSyncWithServer;
@@ -373,47 +420,6 @@ public class CacheData {
     }
     
     // ==================
-    
-    private final String name;
-    
-    private final ConfigFilterChainManager configFilterChainManager;
-    
-    public final String dataId;
-    
-    public final String group;
-    
-    public final String tenant;
-    
-    private final CopyOnWriteArrayList<ManagerListenerWrap> listeners;
-    
-    private volatile String md5;
-    
-    /**
-     * whether use local config.
-     */
-    private volatile boolean isUseLocalConfig = false;
-    
-    /**
-     * last modify time.
-     */
-    private volatile long localConfigLastModified;
-    
-    private volatile String content;
-    
-    private volatile String encryptedDataKey;
-    
-    private volatile long lastModifiedTs;
-    
-    private int taskId;
-    
-    private volatile boolean isInitializing = true;
-    
-    /**
-     * if is cache data md5 sync with the server.
-     */
-    private volatile boolean isSyncWithServer = false;
-    
-    private String type;
     
     public String getEncryptedDataKey() {
         return encryptedDataKey;
