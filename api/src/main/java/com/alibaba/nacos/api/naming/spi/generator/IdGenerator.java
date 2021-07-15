@@ -14,31 +14,19 @@
  * limitations under the License.
  */
 
-package com.alibaba.nacos.common.utils;
+package com.alibaba.nacos.api.naming.spi.generator;
 
 /**
- * Nacos number util.
+ * Generator SPI for Instance Id.
  *
  * @author xiweng.yy
  */
-public class NumberUtil {
+public interface IdGenerator {
     
     /**
-     * Whether all chars of input string is digit.
+     * Generate instance id.
      *
-     * @param input {@code String} checked
-     * @return {@code true} if all chars is digit, otherwise false
+     * @return instance id
      */
-    public static boolean isDigits(String input) {
-        if (StringUtils.isEmpty(input)) {
-            return false;
-        }
-        for (int i = 0; i < input.length(); i++) {
-            if (!Character.isDigit(input.charAt(i))) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
+    String generateInstanceId();
 }

@@ -47,6 +47,7 @@ import com.alibaba.nacos.naming.misc.SwitchDomain;
 import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import com.alibaba.nacos.naming.pojo.InstanceOperationInfo;
 import com.alibaba.nacos.naming.pojo.Subscriber;
+import com.alibaba.nacos.naming.pojo.instance.BeatInfoInstanceBuilder;
 import com.alibaba.nacos.naming.push.UdpPushService;
 import com.alibaba.nacos.naming.utils.ServiceUtil;
 
@@ -211,7 +212,7 @@ public class InstanceOperatorClientImpl implements InstanceOperator {
     
     @Override
     public int handleBeat(String namespaceId, String serviceName, String ip, int port, String cluster,
-            RsInfo clientBeat) throws NacosException {
+            RsInfo clientBeat, BeatInfoInstanceBuilder builder) throws NacosException {
         Service service = getService(namespaceId, serviceName, true);
         String clientId = IpPortBasedClient.getClientId(ip + InternetAddressUtil.IP_PORT_SPLITER + port, true);
         IpPortBasedClient client = (IpPortBasedClient) clientManager.getClient(clientId);
@@ -219,15 +220,7 @@ public class InstanceOperatorClientImpl implements InstanceOperator {
             if (null == clientBeat) {
                 return NamingResponseCode.RESOURCE_NOT_FOUND;
             }
-            Instance instance = new Instance();
-            instance.setPort(clientBeat.getPort());
-            instance.setIp(clientBeat.getIp());
-            instance.setWeight(clientBeat.getWeight());
-            instance.setMetadata(clientBeat.getMetadata());
-            instance.setClusterName(clientBeat.getCluster());
-            instance.setServiceName(serviceName);
-            instance.setInstanceId(instance.getInstanceId());
-            instance.setEphemeral(clientBeat.isEphemeral());
+            Instance instance = builder.setBeatInfo(clientBeat).setServiceName(serviceName).build();
             registerInstance(namespaceId, serviceName, instance);
             client = (IpPortBasedClient) clientManager.getClient(clientId);
         }
